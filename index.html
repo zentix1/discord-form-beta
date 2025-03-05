@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -409,15 +409,9 @@
           return;
         }
 
-        // Simulating URL availability check
-        const isAvailable = Math.random() < 0.5;
-        if (isAvailable) {
-          availabilityMessage.textContent = '✅ This URL is available!';
-          availabilityMessage.style.color = 'var(--success-color)';
-        } else {
-          availabilityMessage.textContent = '❌ This URL is already in use. Please choose another.';
-          availabilityMessage.style.color = 'var(--error-color)';
-        }
+        // Always show URL as available for this demo
+        availabilityMessage.textContent = '✅ This URL is available!';
+        availabilityMessage.style.color = 'var(--success-color)';
       });
 
       confirmPublishBtn.addEventListener('click', () => {

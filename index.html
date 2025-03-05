@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Form Maker | Blaze Team</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app" class="container">
+        <header>
+            <h1>Discord Form Maker</h1>
+            <div class="theme-toggle">
+                <button id="theme-switch">🌓 Toggle Dark Mode</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="form-builder">
+                <div class="field-controls">
+                    <button id="add-text-field">+ Text Input</button>
+                    <button id="add-email-field">+ Email Input</button>
+                    <button id="add-textarea-field">+ Textarea</button>
+                </div>
+
+                <div id="form-fields" class="sortable-container">
+                    <!-- Dynamically added form fields will go here -->
+                </div>
+            </section>
+
+            <section id="form-actions">
+                <button id="save-form">💾 Save Form</button>
+                <button id="publish-form">🌐 Publish Form</button>
+            </section>
+        </main>
+
+        <div id="webhook-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Enter Discord Webhook URL</h2>
+                <input type="url" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+                <div class="modal-actions">
+                    <button id="confirm-webhook">Confirm</button>
+                    <button id="cancel-webhook">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by Blaze Team</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

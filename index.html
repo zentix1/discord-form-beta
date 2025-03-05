@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Form Maker Pro | Blaze Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f4f4f4;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --accent-color: #5865F2;
+            --accent-hover: #4752C4;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --border-radius: 8px;
+        }
+
+        body.dark-mode {
+            --bg-primary: #2c2f33;
+            --bg-secondary: #23272a;
+            --bg-tertiary: #1e2124;
+            --text-primary: #ffffff;
+            --text-secondary: #b9bbbe;
+            --accent-color: #7289da;
+            --accent-hover: #5d73c0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-secondary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .field-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .droppable-area {
+            border: 2px dashed var(--accent-color);
+            min-height: 300px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            background-color: var(--bg-secondary);
+        }
+
+        .form-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .form-field input, 
+        .form-field textarea,
+        .modal-content input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--bg-secondary);
+            border-radius: var(--border-radius);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-field-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--bg-primary);
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: var(--border-radius);
+        }
+
+        #form-preview {
+            margin-top: 20px;
+        }
+
+        .form-config {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .validation-error {
+            color: var(--danger-color);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Discord Form Maker Pro</h1>
+            </div>
+            <div class="theme-toggle">
+                <span>Dark Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <section id="form-builder">
+                <div class="form-config">
+                    <div class="field-controls">
+                        <button class="btn" id="add-text-input">+ Text Input</button>
+                        <button class="btn" id="add-email-input">+ Email Input</button>
+                        <button class="btn" id="add-textarea">+ Textarea</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" id="save-form">💾 Save Form</button>
+                        <button class="btn" id="publish-form">🚀 Publish Form</button>
+                    </div>
+                </div>
+
+                <div id="form-fields" class="droppable-area">
+                    <p class="text-center" id="empty-state">Start building your form by adding fields</p>
+                </div>
+            </section>
+
+            <section id="form-preview">
+                <h2>Form Preview</h2>
+                <div id="live-preview" class="droppable-area"></div>
+            </section>
+        </main>
+
+        <div id="webhook-modal" class="modal">
+            <div class="modal-content">
+                <h3>Publish Form</h3>
+                <p>Enter Discord Webhook URL to publish your form</p>
+                <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+                <div id="webhook-validation-error" class="validation-error"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="cancel-webhook">Cancel</button>
+                    <button class="btn" id="confirm-webhook">Confirm & Publish</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Blaze Labs | Discord Form Maker Pro</p>
+        </footer>
+    </div>
+
+    <script>
+    class FormBuilderPro {
+        constructor() {
+            this.formFields = [];
+            this.setupEventListeners();
+            this.loadSavedForm();
+            this.setupDarkMode();
+        }
+
+        setupEventListeners() {
+            // Field addition
+            document.getElementById('add-text-input').addEventListener('click', () => this.addField('text'));
+            document.getElementById('add-email-input').addEventListener('click', () => this.addField('email'));
+            document.getElementById('add-textarea').addEventListener('click', () => this.addField('textarea'));
+
+            // Form actions
+            document.getElementById('save-form').addEventListener('click', () => this.saveForm());
+            document.getElementById('publish-form').addEventListener('click', () => this.showWebhookModal());
+            
+            // Webhook modal
+            document.getElementById('confirm-webhook').addEventListener('click', () => this.publishForm());
+            document.getElementById('cancel-webhook').addEventListener('click', () => this.hideWebhookModal());
+        }
+
+        setupDarkMode() {
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            darkModeToggle.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('darkMode', darkModeToggle.checked);
+            });
+
+            // Load dark mode preference
+            const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+            darkModeToggle.checked = savedDarkMode;
+            document.body.classList.toggle('dark-mode', savedDarkMode);
+        }
+
+        addField(type) {
+            const field = {
+                id: Date.now(),
+                type,
+                label: `${type.charAt(0).toUpperCase() + type.slice(1)} Field`,
+                placeholder: `Enter ${type} here`,
+                required: false
+            };
+            this.formFields.push(field);
+            this.renderFormFields();
+            this.updatePreview();
+            this.toggleEmptyState();
+        }
+
+        toggleEmptyState() {
+            const emptyState = document.getElementById('empty-state');
+            const formFieldsContainer = document.getElementById('form-fields');
+            if (this.formFields.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        renderFormFields() {
+            const formFieldsContainer = document.getElementById('form-fields');
+            formFieldsContainer.innerHTML = '';
+
+            this.formFields.forEach((field, index) => {
+                const fieldElement = document.createElement('div');
+                fieldElement.classList.add('form-field');
+                
+                // Label input
+                const labelInput = document.createElement('input');
+                labelInput.type = 'text';
+                labelInput.value = field.label;
+                labelInput.addEventListener('change', (e) => {
+                    this.formFields[index].label = e.target.value;
+                    this.updatePreview();
+                });
+
+                // Placeholder input
+                const placeholderInput = document.createElement('input');
+                placeholderInput.type = 'text';
+                placeholderInput.value = field.placeholder;
+                placeholderInput.addEventListener('change', (e) => {
+                    this.formFields[index].placeholder = e.target.value;
+                    this.updatePreview();
+                });
+
+                // Required checkbox
+                const requiredCheckbox = document.createElement('input');
+                requiredCheckbox.type = 'checkbox';
+                requiredCheckbox.checked = field.required;
+                requiredCheckbox.addEventListener('change', (e) => {
+                    this.formFields[index].required = e.target.checked;
+                    this.updatePreview();
+                });
+
+                fieldElement.innerHTML = `
+                    <div>
+                        <strong>Label:</strong>
+                        <input type="text" value="${field.label}" />
+                        <strong>Placeholder:</strong>
+                        <input type="text" value="${field.placeholder}" />
+                        <label>
+                            <input type="checkbox" ${field.required ? 'checked' : ''} /> Required
+                        </label>
+                    </div>
+                `;
+
+                const actionButtons = document.createElement('div');
+                actionButtons.classList.add('form-field-actions');
+
+                // Move Up Button
+                const moveUpBtn = document.createElement('button');
+                moveUpBtn.textContent = '⬆️';
+                moveUpBtn.classList.add('btn', 'btn-secondary');
+                moveUpBtn.disabled = index === 0;
+                moveUpBtn.addEventListener('click', () => this.moveField(index, -1));
+
+                // Move Down Button
+                const moveDownBtn = document.createElement('button');
+                moveDownBtn.textContent = '⬇️';
+                moveDownBtn.classList.add('btn', 'btn-secondary');
+                moveDownBtn.disabled = index === this.formFields.length - 1;
+                moveDownBtn.addEventListener('click', () => this.moveField(index, 1));
+
+                // Delete Button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '❌';
+                deleteBtn.classList.add('btn', 'btn-secondary');
+                deleteBtn.addEventListener('click', () => this.deleteField(index));
+
+                actionButtons.append(moveUpBtn, moveDownBtn, deleteBtn);
+                fieldElement.appendChild(actionButtons);
+
+                formFieldsContainer.appendChild(fieldElement);
+            });
+        }
+
+        updatePreview() {
+            const previewContainer = document.getElementById('live-preview');
+            previewContainer.innerHTML = '<h3>Form Preview</h3>';
+
+            this.formFields.forEach(field => {
+                const fieldWrapper = document.createElement('div');
+                fieldWrapper.style.marginBottom = '15px';
+
+                const label = document.createElement('label');
+                label.textContent = field.label;
+                label.style.display = 'block';
+                label.style.marginBottom = '5px';
+
+                let inputElement;
+                if (field.type === 'textarea') {
+                    inputElement = document.createElement('textarea');
+                    inputElement.rows = 3;
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type = field.type;
+                }
+
+                inputElement.placeholder = field.placeholder;
+                inputElement.required = field.required;
+                inputElement.style.width = '100%';
+                inputElement.style.padding = '8px';
+                inputElement.style.

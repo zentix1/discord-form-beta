@@ -8,9 +8,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind-like Utility Classes -->
-    <style id="base-styles">
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+    <style>
         :root {
             --bg-primary: #2C2F33;
             --bg-secondary: #23272A;
@@ -18,6 +16,11 @@
             --accent-color: #7289DA;
             --accent-hover: #5E7ECE;
             --border-color: #4F545C;
+        }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -46,52 +49,27 @@
             align-items: center;
             gap: 8px;
         }
-        .btn:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-2px);
-        }
         .form-field {
             background-color: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
         }
-        .form-field input, .form-field select {
+        input, select, textarea {
+            width: 100%;
             background-color: var(--bg-secondary);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 8px;
-            flex-grow: 1;
+            padding: 10px;
+            margin-bottom: 10px;
         }
-        .field-actions {
-            display: flex;
-            gap: 10px;
+        #form-publish-container {
+            display: none;
         }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        #form-builder-container {
+            display: block;
         }
         .hidden {
             display: none !important;
@@ -100,48 +78,27 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <div id="form-builder-container">
             <h1 style="color: var(--accent-color); margin-bottom: 20px;">Discord Form Maker</h1>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <div class="field-actions">
-                    <button id="add-text-field" class="btn">+ Text Input</button>
-                    <button id="add-email-field" class="btn">+ Email Input</button>
-                    <button id="add-textarea-field" class="btn">+ Textarea</button>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <div id="form-fields">
-                <!-- Dynamically added form fields will go here -->
+            <div id="form-fields-builder">
+                <!-- Dynamic form field builder will go here -->
             </div>
 
             <div style="display: flex; gap: 15px; margin-top: 20px;">
-                <button id="save-form" class="btn">💾 Save Form</button>
+                <button id="add-text-field" class="btn">+ Text Input</button>
+                <button id="add-email-field" class="btn">+ Email Input</button>
                 <button id="publish-form" class="btn">🌐 Publish Form</button>
-            </div>
-        </main>
-
-        <div id="webhook-modal" class="modal hidden">
-            <div class="modal-content">
-                <h2 style="color: var(--accent-color); margin-bottom: 15px;">Publish Form</h2>
-                <input 
-                    type="url" 
-                    id="webhook-url" 
-                    placeholder="Enter Discord Webhook URL" 
-                    style="width: 100%; padding: 10px; margin-bottom: 15px;"
-                >
-                <div style="display: flex; gap: 15px;">
-                    <button id="confirm-webhook" class="btn">Confirm</button>
-                    <button id="cancel-webhook" class="btn" style="background-color: #FF4D4D;">Cancel</button>
-                </div>
             </div>
         </div>
 
-        <footer style="text-align: center; margin-top: 30px; color: var(--border-color);">
-            Powered by Blaze Team © 2024
-        </footer>
+        <div id="form-publish-container">
+            <h2 style="color: var(--accent-color); margin-bottom: 20px;">Form Submission</h2>
+            <div id="dynamic-form-fields">
+                <!-- Dynamically generated form fields will render here -->
+            </div>
+            <button id="submit-form" class="btn">Submit Form</button>
+        </div>
     </div>
 
     <script>
@@ -151,32 +108,32 @@
             this.publishedFormId = null;
             this.webhookUrl = null;
 
-            this.initDOM();
-            this.initEventListeners();
-            this.loadSavedForm();
+            this.initializeApp();
         }
 
-        initDOM() {
-            this.formFieldsContainer = document.getElementById('form-fields');
-            this.addTextFieldBtn = document.getElementById('add-text-field');
-            this.addEmailFieldBtn = document.getElementById('add-email-field');
-            this.addTextareaFieldBtn = document.getElementById('add-textarea-field');
-            this.saveFormBtn = document.getElementById('save-form');
-            this.publishFormBtn = document.getElementById('publish-form');
-            this.webhookModal = document.getElementById('webhook-modal');
-            this.confirmWebhookBtn = document.getElementById('confirm-webhook');
-            this.cancelWebhookBtn = document.getElementById('cancel-webhook');
-            this.webhookUrlInput = document.getElementById('webhook-url');
+        initializeApp() {
+            // Check if we're on a form page or form builder
+            const urlParams = new URLSearchParams(window.location.search);
+            const formId = urlParams.get('form');
+
+            if (formId) {
+                this.loadPublishedForm(formId);
+            } else {
+                this.setupFormBuilder();
+            }
         }
 
-        initEventListeners() {
-            this.addTextFieldBtn.addEventListener('click', () => this.addField('text'));
-            this.addEmailFieldBtn.addEventListener('click', () => this.addField('email'));
-            this.addTextareaFieldBtn.addEventListener('click', () => this.addField('textarea'));
-            this.saveFormBtn.addEventListener('click', () => this.saveForm());
-            this.publishFormBtn.addEventListener('click', () => this.showWebhookModal());
-            this.confirmWebhookBtn.addEventListener('click', () => this.publishForm());
-            this.cancelWebhookBtn.addEventListener('click', () => this.hideWebhookModal());
+        setupFormBuilder() {
+            document.getElementById('add-text-field').addEventListener('click', () => this.addField('text'));
+            document.getElementById('add-email-field').addEventListener('click', () => this.addField('email'));
+            document.getElementById('publish-form').addEventListener('click', () => this.publishForm());
+
+            // Load saved draft if exists
+            const savedDraft = localStorage.getItem('formBuilderDraft');
+            if (savedDraft) {
+                this.formFields = JSON.parse(savedDraft);
+                this.renderFormBuilder();
+            }
         }
 
         addField(type) {
@@ -188,118 +145,111 @@
             };
 
             this.formFields.push(field);
-            this.renderFormFields();
+            this.renderFormBuilder();
+            this.saveDraft();
         }
 
-        renderFormFields() {
-            this.formFieldsContainer.innerHTML = '';
-            this.formFields.forEach((field, index) => {
-                const fieldElement = document.createElement('div');
-                fieldElement.classList.add('form-field');
-                fieldElement.innerHTML = `
-                    <select class="field-type">
+        renderFormBuilder() {
+            const container = document.getElementById('form-fields-builder');
+            container.innerHTML = this.formFields.map((field, index) => `
+                <div class="form-field">
+                    <input 
+                        type="text" 
+                        value="${field.label}" 
+                        onchange="formMaker.updateFieldLabel(${index}, this.value)"
+                    >
+                    <input 
+                        type="text" 
+                        value="${field.placeholder}" 
+                        onchange="formMaker.updateFieldPlaceholder(${index}, this.value)"
+                    >
+                    <select onchange="formMaker.updateFieldType(${index}, this.value)">
                         <option value="text" ${field.type === 'text' ? 'selected' : ''}>Text</option>
                         <option value="email" ${field.type === 'email' ? 'selected' : ''}>Email</option>
-                        <option value="textarea" ${field.type === 'textarea' ? 'selected' : ''}>Textarea</option>
                     </select>
-                    <input type="text" class="field-label" value="${field.label}">
-                    <input type="text" class="field-placeholder" value="${field.placeholder}">
-                    <div class="field-actions">
-                        <button class="btn move-up" ${index === 0 ? 'disabled' : ''}>⬆️</button>
-                        <button class="btn move-down" ${index === this.formFields.length - 1 ? 'disabled' : ''}>⬇️</button>
-                        <button class="btn delete-field" style="background-color: #FF4D4D;">❌</button>
-                    </div>
-                `;
-
-                // Type change listener
-                fieldElement.querySelector('.field-type').addEventListener('change', (e) => {
-                    this.formFields[index].type = e.target.value;
-                });
-
-                // Label change listener
-                fieldElement.querySelector('.field-label').addEventListener('input', (e) => {
-                    this.formFields[index].label = e.target.value;
-                });
-
-                // Placeholder change listener
-                fieldElement.querySelector('.field-placeholder').addEventListener('input', (e) => {
-                    this.formFields[index].placeholder = e.target.value;
-                });
-
-                // Move up/down listeners
-                fieldElement.querySelector('.move-up')?.addEventListener('click', () => this.moveField(index, -1));
-                fieldElement.querySelector('.move-down')?.addEventListener('click', () => this.moveField(index, 1));
-
-                // Delete field listener
-                fieldElement.querySelector('.delete-field').addEventListener('click', () => this.deleteField(index));
-
-                this.formFieldsContainer.appendChild(fieldElement);
-            });
+                </div>
+            `).join('');
         }
 
-        moveField(index, direction) {
-            const newIndex = index + direction;
-            if (newIndex >= 0 && newIndex < this.formFields.length) {
-                [this.formFields[index], this.formFields[newIndex]] = [this.formFields[newIndex], this.formFields[index]];
-                this.renderFormFields();
-            }
+        updateFieldLabel(index, label) {
+            this.formFields[index].label = label;
+            this.saveDraft();
         }
 
-        deleteField(index) {
-            this.formFields.splice(index, 1);
-            this.renderFormFields();
+        updateFieldPlaceholder(index, placeholder) {
+            this.formFields[index].placeholder = placeholder;
+            this.saveDraft();
         }
 
-        saveForm() {
-            try {
-                localStorage.setItem('blazeFormData', JSON.stringify({
-                    formFields: this.formFields,
-                    publishedFormId: this.publishedFormId,
-                    webhookUrl: this.webhookUrl
-                }));
-                alert('Form saved successfully! 💾');
-            } catch (error) {
-                alert('Failed to save form. Storage might be full.');
-            }
+        updateFieldType(index, type) {
+            this.formFields[index].type = type;
+            this.saveDraft();
         }
 
-        loadSavedForm() {
-            try {
-                const savedData = localStorage.getItem('blazeFormData');
-                if (savedData) {
-                    const { formFields, publishedFormId, webhookUrl } = JSON.parse(savedData);
-                    this.formFields = formFields;
-                    this.publishedFormId = publishedFormId;
-                    this.webhookUrl = webhookUrl;
-                    this.renderFormFields();
-                }
-            } catch (error) {
-                alert('Error loading saved form.');
-            }
-        }
-
-        showWebhookModal() {
-            this.webhookModal.classList.remove('hidden');
-        }
-
-        hideWebhookModal() {
-            this.webhookModal.classList.add('hidden');
+        saveDraft() {
+            localStorage.setItem('formBuilderDraft', JSON.stringify(this.formFields));
         }
 
         publishForm() {
-            const webhookUrl = this.webhookUrlInput.value.trim();
-            if (!webhookUrl) {
-                alert('Please enter a valid webhook URL');
+            const formId = this.generateUniqueId();
+            const formData = {
+                id: formId,
+                fields: this.formFields,
+                createdAt: new Date().toISOString()
+            };
+
+            // Save form to localStorage
+            localStorage.setItem(`form_${formId}`, JSON.stringify(formData));
+
+            // Generate shareable URL
+            const shareUrl = `${window.location.origin}?form=${formId}`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert(`Form Published! 🎉\n\nShare URL: ${shareUrl}\n\nURL Copied to Clipboard`);
+            });
+        }
+
+        loadPublishedForm(formId) {
+            // Switch to form view
+            document.getElementById('form-builder-container').style.display = 'none';
+            document.getElementById('form-publish-container').style.display = 'block';
+
+            const storedForm = localStorage.getItem(`form_${formId}`);
+            if (!storedForm) {
+                alert('Form not found!');
                 return;
             }
 
-            this.publishedFormId = this.generateUniqueId();
-            this.webhookUrl = webhookUrl;
-            this.saveForm();
+            const { fields } = JSON.parse(storedForm);
+            this.renderPublishedForm(fields);
+        }
 
-            const publishedLink = `https://form.blazelabs.online/${this.publishedFormId}`;
-            alert(`Form published! 🎉\n\nYour unique link is:\n${publishedLink}`);
-            this.hideWebhookModal();
+        renderPublishedForm(fields) {
+            const container = document.getElementById('dynamic-form-fields');
+            container.innerHTML = fields.map(field => `
+                <div>
+                    <label>${field.label}</label>
+                    <input 
+                        type="${field.type}" 
+                        placeholder="${field.placeholder}"
+                        name="${field.id}"
+                    >
+                </div>
+            `).join('');
+
+            document.getElementById('submit-form').addEventListener('click', () => this.submitForm(fields));
+        }
+
+        submitForm(fields) {
+            const formData = {};
+            fields.forEach(field => {
+                const input = document.querySelector(`[name="${field.id}"]`);
+                formData[field.label] = input.value;
+            });
+
+            alert('Form Submitted! (Webhook integration coming soon)');
+            console.log('Form Data:', formData);
         }
 
         generateUniqueId() {
@@ -307,10 +257,9 @@
         }
     }
 
-    // Initialize FormMaker on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        new FormMaker();
-    });
+    // Global instance
+    const formMaker = new FormMaker();
+    window.formMaker = formMaker;
     </script>
 </body>
 </html>
